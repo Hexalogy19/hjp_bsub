@@ -1,5 +1,5 @@
 #!/bin/bash
-# hjp_bsub v1.4
+# hjp_bsub v1.5
 declare -A Q_NPROC Q_NTHR Q_NCPU Q_MARCH Q_NODE_PATTERN Q_THRESHOLD Q_TFLOPS
 Q_NPROC[ocean_530_1day]=4;  Q_NTHR[ocean_530_1day]=6;  Q_NCPU[ocean_530_1day]=24;  Q_MARCH[ocean_530_1day]=skylake-avx512;  Q_NODE_PATTERN[ocean_530_1day]='^hd0(0[1-9]|1[0-9]|2[0-8]) '; Q_THRESHOLD[ocean_530_1day]=36;  Q_TFLOPS[ocean_530_1day]="79"
 Q_NPROC[ocean6226R_1day]=4; Q_NTHR[ocean6226R_1day]=8;  Q_NCPU[ocean6226R_1day]=32; Q_MARCH[ocean6226R_1day]=cascadelake;    Q_NODE_PATTERN[ocean6226R_1day]='^hd0(29|3[0-9]|4[0-8]) ';   Q_THRESHOLD[ocean6226R_1day]=48; Q_TFLOPS[ocean6226R_1day]="129"
@@ -128,7 +128,7 @@ detect_orphan_nodes() {
   cat "$tmpdir"/* 2>/dev/null
   rm -rf "$tmpdir"
 }
-printf "\n${bold}${cyan}╔══════════════════════════════╗\n║       hjp_bsub  v1.4         ║\n╚══════════════════════════════╝${reset}\n"
+printf "\n${bold}${cyan}╔══════════════════════════════╗\n║       hjp_bsub  v1.5         ║\n╚══════════════════════════════╝${reset}\n"
 printf "${yellow}Gathering node statistics...${reset}"
 fetch_cluster_data
 gather_stats
@@ -169,7 +169,7 @@ CMD="bsub \
   -R '${R_EXPR}' \
   vasp-${MARCH} \
   mpirun --display-map \
-    --prtemca oob_tcp_if_include 10.1.0.0/16 \
+    --prtemca prte_if_include 10.1.0.0/16 \
     -n ${TOTAL_MPI} \
     --map-by ${MPIMAP} \
     -x OMP_NUM_THREADS=${NTHR} \
@@ -178,7 +178,7 @@ printf "\n${bold}── Submit command %s${reset}\n" "$(printf '─%.0s' {1..33}
 printf "%s\n" "$CMD"
 printf "${bold}%s${reset}\n" "$(printf '─%.0s' {1..48})"
 printf "
-  ${bold}Enter${reset}) Submit   ${bold}e${reset}) Edit then submit   ${bold}p${rest}) Print only   ${bold}q${reset}) Quit
+  ${bold}Enter${reset}) Submit   ${bold}e${reset}) Edit then submit   ${bold}p${reset}) Print only   ${bold}q${reset}) Quit
 "
 printf "Choice: "; read -r ACTION
 case "$ACTION" in
