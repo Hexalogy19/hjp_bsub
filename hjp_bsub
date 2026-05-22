@@ -1,5 +1,5 @@
 #!/bin/bash
-# hjp_bsub v1.6
+# hjp_bsub v1.7
 declare -A Q_NPROC Q_NTHR Q_NCPU Q_MARCH Q_NODE_PATTERN Q_THRESHOLD Q_TFLOPS
 Q_NPROC[ocean_530_1day]=4;  Q_NTHR[ocean_530_1day]=6;  Q_NCPU[ocean_530_1day]=24;  Q_MARCH[ocean_530_1day]=skylake-avx512;  Q_NODE_PATTERN[ocean_530_1day]='^hd0(0[1-9]|1[0-9]|2[0-8]) '; Q_THRESHOLD[ocean_530_1day]=36;  Q_TFLOPS[ocean_530_1day]="79"
 Q_NPROC[ocean6226R_1day]=4; Q_NTHR[ocean6226R_1day]=8;  Q_NCPU[ocean6226R_1day]=32; Q_MARCH[ocean6226R_1day]=cascadelake;    Q_NODE_PATTERN[ocean6226R_1day]='^hd0(29|3[0-9]|4[0-8]) ';   Q_THRESHOLD[ocean6226R_1day]=48; Q_TFLOPS[ocean6226R_1day]="129"
@@ -128,7 +128,7 @@ detect_orphan_nodes() {
   cat "$tmpdir"/* 2>/dev/null
   rm -rf "$tmpdir"
 }
-printf "\n${bold}${cyan}╔══════════════════════════════╗\n║       hjp_bsub  v1.6         ║\n╚══════════════════════════════╝${reset}\n"
+printf "\n${bold}${cyan}╔══════════════════════════════╗\n║       hjp_bsub  v1.7         ║\n╚══════════════════════════════╝${reset}\n"
 printf "${yellow}Gathering node statistics...${reset}"
 fetch_cluster_data
 gather_stats
@@ -151,11 +151,13 @@ else
   EXCLUDE_EXPR=$(build_exclude_expr "${BAD_NODES[@]}")
 fi
 TOTAL_SLOTS=$(( NUM_NODES * NCPU_PER_NODE ))
-TOTAL_MPI=$(( NUM_NODES * NPROC_PER_NODE ))
 if [[ "$NUM_NODES" -eq 1 ]]; then
+  TOTAL_MPI=$(( NPROC_PER_NODE ))
   SPAN_EXPR="span[hosts=1]"
   MPIMAP="socket:PE=${NTHR}"
 else
+  # prrte no_tree_spawn excludes the HNP node from app placement; subtract 1 node
+  TOTAL_MPI=$(( (NUM_NODES - 1) * NPROC_PER_NODE ))
   SPAN_EXPR="span[ptile=${NCPU_PER_NODE}]"
   MPIMAP="ppr:${NPROC_PER_NODE}:node:PE=${NTHR}"
 fi
